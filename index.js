@@ -74,11 +74,15 @@ low(adapter)
 
         // Initialise MAM State
         let seed = db.get('config.seed').value()
-
+        console.log("seed", seed)
         if (seed) {
             mamState = Mam.init(PROVIDER, seed)
+
             let old_state = db.get('config.state').value()
-            updateMamState(old_state);
+            if(old_state) {
+                updateMamState(old_state);
+            }
+
 
         } else {
             seed = generateSeed()
@@ -149,6 +153,7 @@ const publishToMAM = async data => {
 
 const publishSnapshot = async () => {
     let data = await fetchData()
+
     let ipfs_hash = await publishToIPFS(data)
     let mam_message = {
         timestamp: Date.now(),
