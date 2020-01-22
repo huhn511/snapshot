@@ -8,12 +8,12 @@ const fetch = require('node-fetch');
 
 const ipfsClient = require('ipfs-http-client')
 
-const ipfs = ipfsClient('ipfs', '5001', { protocol: 'http' })
+const { PROVIDER, URL, APP_PORT, IPFS_URL, IPFS_PORT } = require('./config.json');
+const ipfs = ipfsClient(IPFS_URL)
 
 const CronJob = require('cron').CronJob;
 
 const Mam = require('@iota/mam');
-const { PROVIDER, URL, APP_PORT } = require('./config.json');
 
 const { asciiToTrytes } = require('@iota/converter')
 const generateSeed = require('iota-generate-seed');
@@ -123,7 +123,7 @@ const fetchData = async () => {
     return json
 }
 
-const publishToIPFS = async data => {
+const publishToIPFS = async data => {    
     let doc = JSON.stringify(data);
     let content = ipfsClient.Buffer.from(doc)
     let results = await ipfs.add(content)
