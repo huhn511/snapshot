@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors');
+const paymentModule = require('iota-payment')
 
 const low = require('lowdb')
 const FileAsync = require('lowdb/adapters/FileAsync')
@@ -26,6 +27,24 @@ const PORT = APP_PORT || 3000
 const app = express()
 app.use(cors());
 app.use(bodyParser.json())
+
+
+let options = {
+    api: true,
+    websockets: true
+}
+
+let server = paymentModule.createServer(app, options)
+
+//Create an event handler which is called, when a payment was successfull
+let onPaymentSuccess = function (payment) {
+    console.log(`Payment received:`, payment);
+    // TODO: handle payout
+    
+  }
+
+// Listen to the "paymentSuccess" event and call function
+paymentModule.on('paymentSuccess', onPaymentSuccess);
 
 // Create database instance and start server
 const adapter = new FileAsync('db.json')
@@ -96,6 +115,7 @@ low(adapter)
         }
 
         new CronJob('0 */1 * * * *', async function () {
+            console.log("Publishing data...")
             publishSnapshot().then((response) => {
                 db.set('config.state', response.state)
                     .write()
@@ -113,7 +133,7 @@ low(adapter)
         return db.defaults({ snapshots: [], config: {} }).write()
     })
     .then(() => {
-        app.listen(PORT, () => console.log('Server listening on port 3000'))
+        server.listen(PORT, () => console.log('Server listening on port ' + PORT))
     })
 
 const fetchData = async () => {
